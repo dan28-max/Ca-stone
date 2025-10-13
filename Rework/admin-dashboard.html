@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spartan Data - Admin Dashboard</title>
+    <link rel="stylesheet" href="styles.css?v=1.0">
+    <link rel="stylesheet" href="admin-dashboard.css?v=1.0">
+    <link rel="stylesheet" href="admin-dashboard-enhanced.css?v=1.1">
+    <link rel="stylesheet" href="css/assignment-steps.css?v=1.0">
+    <link rel="stylesheet" href="css/data-management-formal.css?v=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo-container">
+                <img src="image/BatStateU-NEU-Logo.png" alt="BatStateU Logo" class="dashboard-logo" style="width: 80px; height: 80px; margin-bottom: 15px; border-radius: 50%; background: white; padding: 5px;">
+                <h1>Spartan Data</h1>
+                <p>Admin Dashboard</p>
+            </div>
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="user-details">
+                    <span class="user-name" id="userName">Admin User</span>
+                    <span class="user-role" id="userRole">Administrator</span>
+                </div>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item active" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </li>
+                <li class="nav-item" data-section="analytics">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </li>
+                <li class="nav-item" data-section="users">
+                    <i class="fas fa-users"></i>
+                    <span>User Management</span>
+                </li>
+                <li class="nav-item" data-section="data">
+                    <i class="fas fa-database"></i>
+                    <span>Data Management</span>
+                </li>
+                <li class="nav-item" data-section="submissions">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Report Submissions</span>
+                </li>
+                <li class="nav-item" data-section="system">
+                    <i class="fas fa-cogs"></i>
+                    <span>System Settings</span>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 id="pageTitle">Admin Dashboard</h2>
+                </div>
+                <div class="header-right">
+                    <div class="notifications" onclick="toggleNotifications()">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notificationCount">0</span>
+                        
+                        <!-- Notifications Dropdown -->
+                        <div class="notifications-dropdown" id="notificationsDropdown">
+                            <div class="notifications-header">
+                                <h3>Notifications</h3>
+                                <button class="mark-all-read" onclick="markAllAsRead(event)">
+                                    <i class="fas fa-check-double"></i> Mark all as read
+                                </button>
+                            </div>
+                            <div class="notifications-list" id="notificationsList">
+                                <div class="notification-empty">
+                                    <i class="fas fa-bell-slash"></i>
+                                    <p>No new notifications</p>
+                                </div>
+                            </div>
+                            <div class="notifications-footer">
+                                <a href="#" onclick="viewAllNotifications(event)">View All Notifications</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="user-profile">
+                        <div class="profile-img-placeholder">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- Dashboard Section -->
+                <section id="dashboard" class="content-section active">
+                    <!-- Welcome Banner -->
+                    <div class="welcome-banner">
+                        <div class="welcome-content">
+                            <h1>Dashboard Overview 📊</h1>
+                            <p>Real-time statistics and insights for reports and users</p>
+                        </div>
+                        <div class="welcome-actions">
+                            <select class="time-filter" id="dashboardTimeFilter" onchange="updateDashboardStats()">
+                                <option value="today">Today</option>
+                                <option value="week" selected>This Week</option>
+                                <option value="month">This Month</option>
+                                <option value="year">This Year</option>
+                                <option value="all">All Time</option>
+                            </select>
+                            <button class="btn-refresh" onclick="refreshDashboard()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Main Statistics Cards -->
+                    <div class="stats-overview-grid">
+                        <!-- Users Statistics -->
+                        <div class="stat-card-large users-stat">
+                            <div class="stat-header">
+                                <div class="stat-icon-large">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="stat-title">
+                                    <h3>User Statistics</h3>
+                                    <p>System user overview</p>
+                                </div>
+                            </div>
+                            <div class="stat-body">
+                                <div class="stat-main-number">
+                                    <span class="big-number" id="dashTotalUsers">0</span>
+                                    <span class="stat-label">Total Users</span>
+                                </div>
+                                <div class="stat-breakdown">
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-value" id="dashAdminUsers">0</span>
+                                        <span class="breakdown-label">Admins</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-value" id="dashActiveUsers">0</span>
+                                        <span class="breakdown-label">Active</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-value" id="dashInactiveUsers">0</span>
+                                        <span class="breakdown-label">Inactive</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="stat-footer">
+                                <button class="btn-view-details" onclick="navigateToSection('users')">
+                                    View Details <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Reports Statistics -->
+                        <div class="stat-card-large reports-stat">
+                            <div class="stat-header">
+                                <div class="stat-icon-large">
+                                    <i class="fas fa-file-alt"></i>
+                                </div>
+                                <div class="stat-title">
+                                    <h3>Report Statistics</h3>
+                                    <p>Submission overview</p>
+                                </div>
+                            </div>
+                            <div class="stat-body">
+                                <div class="stat-main-number">
+                                    <span class="big-number" id="dashTotalReports">0</span>
+                                    <span class="stat-label">Total Submissions</span>
+                                </div>
+                                <div class="stat-breakdown">
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-value pending" id="dashPendingReports">0</span>
+                                        <span class="breakdown-label">Pending</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-value approved" id="dashApprovedReports">0</span>
+                                        <span class="breakdown-label">Approved</span>
+                                    </div>
+                                    <div class="breakdown-item">
+                                        <span class="breakdown-value rejected" id="dashRejectedReports">0</span>
+                                        <span class="breakdown-label">Rejected</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="stat-footer">
+                                <button class="btn-view-details" onclick="navigateToSection('submissions')">
+                                    View Details <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Statistics Grid -->
+                    <div class="detailed-stats-grid">
+                        <!-- Reports by Type -->
+                        <div class="dashboard-card">
+                            <div class="card-header-dash">
+                                <h3><i class="fas fa-chart-pie"></i> Reports by Type</h3>
+                                <button class="btn-export" onclick="exportReportStats()">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                            <div class="report-types-list" id="reportTypesList">
+                                <div class="loading-state">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <p>Loading report types...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reports by Campus -->
+                        <div class="dashboard-card">
+                            <div class="card-header-dash">
+                                <h3><i class="fas fa-building"></i> Reports by Campus</h3>
+                                <button class="btn-export" onclick="exportCampusStats()">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                            <div class="campus-stats-list" id="campusStatsList">
+                                <div class="loading-state">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <p>Loading campus data...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- User Activity -->
+                        <div class="dashboard-card">
+                            <div class="card-header-dash">
+                                <h3><i class="fas fa-user-clock"></i> User Activity</h3>
+                                <button class="btn-export" onclick="exportUserActivity()">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                            <div class="user-activity-list" id="userActivityList">
+                                <div class="loading-state">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <p>Loading user activity...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Submissions -->
+                        <div class="dashboard-card">
+                            <div class="card-header-dash">
+                                <h3><i class="fas fa-clock"></i> Recent Submissions</h3>
+                                <button class="btn-view-all" onclick="navigateToSection('submissions')">View All</button>
+                            </div>
+                            <div class="recent-submissions-list" id="recentSubmissionsList">
+                                <div class="loading-state">
+                                    <i class="fas fa-spinner fa-spin"></i>
+                                    <p>Loading submissions...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data Records Statistics -->
+                    <div class="data-records-section">
+                        <h3><i class="fas fa-database"></i> Data Records by Report Type</h3>
+                        <div class="data-records-grid" id="dataRecordsGrid">
+                            <div class="loading-state">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <p>Loading data records...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="admin-quick-actions">
+                        <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+                        <div class="action-buttons">
+                            <button class="action-btn primary" onclick="addUser()">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Add User</span>
+                            </button>
+                            <button class="action-btn secondary" onclick="navigateToSection('data')">
+                                <i class="fas fa-tasks"></i>
+                                <span>Assign Reports</span>
+                            </button>
+                            <button class="action-btn success" onclick="exportAllData()">
+                                <i class="fas fa-file-export"></i>
+                                <span>Export All Data</span>
+                            </button>
+                            <button class="action-btn info" onclick="generateStatisticsReport()">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>Generate Report</span>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Analytics Section -->
+                <section id="analytics" class="content-section">
+                    <div class="section-header-formal">
+                        <div class="header-content">
+                            <h2><i class="fas fa-chart-line"></i> Report Analytics</h2>
+                            <p class="section-description">Visual analytics and insights for report submissions</p>
+                        </div>
+                        <div class="analytics-controls">
+                            <select class="time-range-select formal-select" id="analyticsTableFilter" onchange="adminDashboard.loadAnalytics()">
+                                <option value="all">All Report Types</option>
+                                <option value="campuspopulation">Campus Population</option>
+                                <option value="admissiondata">Admission Data</option>
+                                <option value="enrollmentdata">Enrollment Data</option>
+                                <option value="graduatesdata">Graduates Data</option>
+                                <option value="employee">Employee Data</option>
+                                <option value="leaveprivilege">Leave Privilege</option>
+                                <option value="disabilitydata">Disability Data</option>
+                                <option value="wastedata">Waste Data</option>
+                                <option value="vehicledata">Vehicle Data</option>
+                                <option value="fueldata">Fuel Data</option>
+                                <option value="waterdata">Water Data</option>
+                                <option value="electricitydata">Electricity Data</option>
+                            </select>
+                            <select class="time-range-select formal-select" id="analyticsTimeRange" onchange="adminDashboard.loadAnalytics()">
+                                <option value="7d">Last 7 Days</option>
+                                <option value="30d" selected>Last 30 Days</option>
+                                <option value="90d">Last 90 Days</option>
+                                <option value="all">All Time</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Filter Info Banner -->
+                    <div id="analyticsFilterBanner" class="analytics-filter-banner" style="display: none;">
+                        <div class="filter-banner-content">
+                            <i class="fas fa-filter"></i>
+                            <div>
+                                <strong>Active Filters:</strong>
+                                <span id="filterBannerText"></span>
+                            </div>
+                        </div>
+                        <button class="btn-clear-filters" onclick="adminDashboard.clearAnalyticsFilters()">
+                            <i class="fas fa-times"></i> Clear Filters
+                        </button>
+                    </div>
+
+                    <!-- Charts Grid -->
+                    <div class="charts-grid">
+                        <!-- Submissions by Status Chart -->
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3><i class="fas fa-chart-pie"></i> Submissions by Status</h3>
+                                <button class="btn-export" onclick="exportChart('statusChart')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="statusChart"></canvas>
+                            </div>
+                            <div class="chart-legend" id="statusLegend"></div>
+                        </div>
+
+                        <!-- Submissions by Campus Chart -->
+                        <div class="chart-card">
+                            <div class="chart-header">
+                                <h3><i class="fas fa-chart-bar"></i> Submissions by Campus</h3>
+                                <button class="btn-export" onclick="exportChart('campusChart')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="campusChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Submissions by Report Type Chart -->
+                        <div class="chart-card chart-card-wide">
+                            <div class="chart-header">
+                                <h3><i class="fas fa-chart-bar"></i> Submissions by Report Type</h3>
+                                <button class="btn-export" onclick="exportChart('reportTypeChart')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="reportTypeChart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Submissions Over Time Chart -->
+                        <div class="chart-card chart-card-wide">
+                            <div class="chart-header">
+                                <h3><i class="fas fa-chart-line"></i> Submissions Over Time</h3>
+                                <button class="btn-export" onclick="exportChart('timelineChart')">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="timelineChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Analytics Summary Cards -->
+                    <div class="analytics-summary">
+                        <div class="summary-card">
+                            <div class="summary-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="summary-content">
+                                <h4>Total Submissions</h4>
+                                <p class="summary-value" id="analyticsTotalSubmissions">0</p>
+                                <span class="summary-change positive" id="submissionsChange">+0%</span>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="summary-content">
+                                <h4>Approval Rate</h4>
+                                <p class="summary-value" id="analyticsApprovalRate">0%</p>
+                                <span class="summary-change positive" id="approvalChange">+0%</span>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <div class="summary-content">
+                                <h4>Active Campuses</h4>
+                                <p class="summary-value" id="analyticsActiveCampuses">0</p>
+                                <span class="summary-change" id="campusesChange">0 campuses</span>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="summary-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="summary-content">
+                                <h4>Avg. Processing Time</h4>
+                                <p class="summary-value" id="analyticsAvgTime">0h</p>
+                                <span class="summary-change" id="timeChange">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- User Management Section -->
+                <section id="users" class="content-section">
+                    <div class="section-header-formal">
+                        <div class="header-content">
+                            <h2><i class="fas fa-users-cog"></i> User Management</h2>
+                            <p class="section-description">Manage system users, roles, and access permissions</p>
+                        </div>
+                        <button class="btn-formal btn-primary" onclick="addUser()">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Add New User</span>
+                        </button>
+                    </div>
+
+                    <!-- User Statistics -->
+                    <div class="submissions-controls">
+                        <div class="stats-row">
+                            <div class="stat-box">
+                                <i class="fas fa-users"></i>
+                                <div>
+                                    <span class="stat-value" id="totalUsersCount">0</span>
+                                    <span class="stat-label">Total Users</span>
+                                </div>
+                            </div>
+                            <div class="stat-box">
+                                <i class="fas fa-user-shield"></i>
+                                <div>
+                                    <span class="stat-value" id="adminCount">0</span>
+                                    <span class="stat-label">Admins</span>
+                                </div>
+                            </div>
+                            <div class="stat-box">
+                                <i class="fas fa-user-check"></i>
+                                <div>
+                                    <span class="stat-value" id="activeUsersCount">0</span>
+                                    <span class="stat-label">Active</span>
+                                </div>
+                            </div>
+                            <div class="stat-box">
+                                <i class="fas fa-user-clock"></i>
+                                <div>
+                                    <span class="stat-value" id="inactiveUsersCount">0</span>
+                                    <span class="stat-label">Inactive</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Search and Filter -->
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label><i class="fas fa-search"></i> Search:</label>
+                                <input type="text" id="userSearch" class="formal-input" placeholder="Search by name or email..." onkeyup="filterUsersTable()">
+                            </div>
+                            <div class="filter-group">
+                                <label><i class="fas fa-filter"></i> Role:</label>
+                                <select id="userRoleFilter" class="formal-select" onchange="filterUsersTable()">
+                                    <option value="">All Roles</option>
+                                    <option value="super_admin">Super Admin</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="user">User</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label><i class="fas fa-toggle-on"></i> Status:</label>
+                                <select id="userStatusFilter" class="formal-select" onchange="filterUsersTable()">
+                                    <option value="">All Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                    <option value="suspended">Suspended</option>
+                                </select>
+                            </div>
+                            <button class="btn-formal btn-primary" onclick="adminDashboard.loadUsers()">
+                                <i class="fas fa-sync"></i>
+                                <span>Refresh</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Users Table -->
+                    <div class="submissions-table-container">
+                        <div class="table-wrapper">
+                            <table class="formal-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;">ID</th>
+                                        <th>Name</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Campus</th>
+                                        <th>Office</th>
+                                        <th style="width: 100px;">Status</th>
+                                        <th>Last Login</th>
+                                        <th style="width: 150px;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTableBody">
+                                    <tr>
+                                        <td colspan="9" style="text-align: center; padding: 40px;">
+                                            <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #dc143c;"></i>
+                                            <p style="margin-top: 10px; color: #666;">Loading users...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Data Management Section -->
+                <section id="data" class="content-section">
+                    <div class="section-header-formal">
+                        <div class="header-content">
+                            <h2><i class="fas fa-clipboard-list"></i> Report Assignment Management</h2>
+                            <p class="section-description">Assign data collection reports to offices and departments</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Assignment Steps Progress -->
+                    <div class="assignment-steps-formal">
+                        <div class="step-formal active" data-step="1">
+                            <div class="step-circle">
+                                <span class="step-number">1</span>
+                                <i class="fas fa-check step-check"></i>
+                            </div>
+                            <div class="step-label">
+                                <span class="step-title">Select Reports</span>
+                                <span class="step-subtitle">Choose reports to assign</span>
+                            </div>
+                        </div>
+                        <div class="step-connector"></div>
+                        <div class="step-formal" data-step="2">
+                            <div class="step-circle">
+                                <span class="step-number">2</span>
+                                <i class="fas fa-check step-check"></i>
+                            </div>
+                            <div class="step-label">
+                                <span class="step-title">Select Offices</span>
+                                <span class="step-subtitle">Choose target offices</span>
+                            </div>
+                        </div>
+                        <div class="step-connector"></div>
+                        <div class="step-formal" data-step="3">
+                            <div class="step-circle">
+                                <span class="step-number">3</span>
+                                <i class="fas fa-check step-check"></i>
+                            </div>
+                            <div class="step-label">
+                                <span class="step-title">Review & Confirm</span>
+                                <span class="step-subtitle">Finalize assignment</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 1: Select Reports -->
+                    <div id="step1" class="assignment-step-formal active">
+                        <div class="step-card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-file-alt"></i> Available Reports</h3>
+                                <p>Select one or more reports to assign to offices</p>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-wrapper">
+                                    <table class="formal-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 50px;">
+                                                    <div class="checkbox-wrapper">
+                                                        <input type="checkbox" id="selectAllReports" data-action="toggle-select-all">
+                                                        <label for="selectAllReports"></label>
+                                                    </div>
+                                                </th>
+                                                <th>Report Name</th>
+                                                <th>Description</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="reportsTableBody">
+                                            <!-- Reports will be loaded here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button type="button" class="btn-formal btn-primary" id="nextToStep2" disabled>
+                                    <span>Continue to Office Selection</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2: Select Offices -->
+                    <div id="step2" class="assignment-step-formal" style="display: none;">
+                        <div class="step-card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-building"></i> Target Offices</h3>
+                                <p>Select offices and departments to receive the selected reports</p>
+                            </div>
+                            <div class="card-body">
+                                <div class="offices-grid">
+                                    <div class="campuses-container">
+                                        <!-- Campuses and offices will be loaded here -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button type="button" class="btn-formal btn-secondary" onclick="adminDashboard.goToStep(1)">
+                                    <i class="fas fa-arrow-left"></i>
+                                    <span>Back</span>
+                                </button>
+                                <button type="button" class="btn-formal btn-primary" id="nextToStep3" disabled>
+                                    <span>Continue to Review</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3: Confirm Assignment -->
+                    <div id="step3" class="assignment-step-formal" style="display: none;">
+                        <div class="step-card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-check-circle"></i> Review Assignment</h3>
+                                <p>Please review the assignment details before confirming</p>
+                            </div>
+                            <div class="card-body">
+                                <div class="confirmation-grid">
+                                    <div class="confirmation-section">
+                                        <div class="section-title">
+                                            <i class="fas fa-file-alt"></i>
+                                            <h4>Selected Reports</h4>
+                                        </div>
+                                        <ul id="selectedReportsList" class="formal-list"></ul>
+                                    </div>
+                                    <div class="confirmation-section">
+                                        <div class="section-title">
+                                            <i class="fas fa-building"></i>
+                                            <h4>Target Offices</h4>
+                                        </div>
+                                        <ul id="selectedOfficesList" class="formal-list"></ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <button type="button" class="btn-formal btn-secondary" onclick="adminDashboard.goToStep(2)">
+                                    <i class="fas fa-arrow-left"></i>
+                                    <span>Back</span>
+                                </button>
+                                <button type="button" class="btn-formal btn-success" id="confirmAssignment">
+                                    <i class="fas fa-check"></i>
+                                    <span>Confirm Assignment</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Report Submissions Section -->
+                <section id="submissions" class="content-section">
+                    <div class="section-header-formal">
+                        <div class="header-content">
+                            <h2><i class="fas fa-inbox"></i> Report Submissions</h2>
+                            <p class="section-description">Review and manage all report submissions from offices</p>
+                        </div>
+                    </div>
+
+                    <!-- Filters and Stats -->
+                    <div class="submissions-controls">
+                        <div class="stats-row">
+                            <div class="stat-box">
+                                <i class="fas fa-clock"></i>
+                                <div>
+                                    <span class="stat-value" id="pendingCount">0</span>
+                                    <span class="stat-label">Pending</span>
+                                </div>
+                            </div>
+                            <div class="stat-box">
+                                <i class="fas fa-check-circle"></i>
+                                <div>
+                                    <span class="stat-value" id="approvedCount">0</span>
+                                    <span class="stat-label">Approved</span>
+                                </div>
+                            </div>
+                            <div class="stat-box">
+                                <i class="fas fa-times-circle"></i>
+                                <div>
+                                    <span class="stat-value" id="rejectedCount">0</span>
+                                    <span class="stat-label">Rejected</span>
+                                </div>
+                            </div>
+                            <div class="stat-box">
+                                <i class="fas fa-file-alt"></i>
+                                <div>
+                                    <span class="stat-value" id="totalCount">0</span>
+                                    <span class="stat-label">Total</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label><i class="fas fa-filter"></i> Status:</label>
+                                <select id="statusFilter" class="formal-select" onchange="adminDashboard.filterSubmissions()">
+                                    <option value="">All Status</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="rejected">Rejected</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label><i class="fas fa-building"></i> Campus:</label>
+                                <select id="campusFilter" class="formal-select" onchange="adminDashboard.filterSubmissions()">
+                                    <option value="">All Campus</option>
+                                    <option value="Alangilan">Alangilan</option>
+                                    <option value="Nasugbo">Nasugbu</option>
+                                    <option value="Balayan">Balayan</option>
+                                    <option value="Malvar">Malvar</option>
+                                    <option value="Lemery">Lemery</option>
+                                    <option value="Lipa">Lipa</option>
+                                    <option value="Lobo">Lobo</option>
+                                    <option value="Mabini">Mabini</option>
+                                    <option value="Pablo Borbon">Pablo Borbon</option>
+                                    <option value="Rosario">Rosario</option>
+                                    <option value="San Juan">San Juan</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label><i class="fas fa-table"></i> Report Type:</label>
+                                <select id="reportTypeFilter" class="formal-select" onchange="adminDashboard.filterSubmissions()">
+                                    <option value="">All Reports</option>
+                                    <option value="campuspopulation">Campus Population</option>
+                                    <option value="admissiondata">Admission Data</option>
+                                    <option value="enrollmentdata">Enrollment Data</option>
+                                    <option value="graduatesdata">Graduates Data</option>
+                                    <option value="employee">Employee Data</option>
+                                    <option value="leaveprivilege">Leave Privilege</option>
+                                    <option value="libraryvisitor">Library Visitor</option>
+                                    <option value="pwd">PWD Data</option>
+                                    <option value="waterconsumption">Water Consumption</option>
+                                    <option value="electricityconsumption">Electricity Consumption</option>
+                                    <option value="solidwaste">Solid Waste</option>
+                                    <option value="foodwaste">Food Waste</option>
+                                    <option value="fuelconsumption">Fuel Consumption</option>
+                                </select>
+                            </div>
+                            <button class="btn-formal btn-primary" onclick="adminDashboard.loadSubmissions()">
+                                <i class="fas fa-sync"></i>
+                                <span>Refresh</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Submissions Table -->
+                    <div class="submissions-table-container">
+                        <div class="table-wrapper">
+                            <table class="formal-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">ID</th>
+                                        <th>Report Type</th>
+                                        <th>Campus</th>
+                                        <th>Office</th>
+                                        <th>Submitted By</th>
+                                        <th style="width: 80px;">Records</th>
+                                        <th>Date & Time</th>
+                                        <th style="width: 100px;">Status</th>
+                                        <th style="width: 200px;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="submissionsTableBody">
+                                    <tr>
+                                        <td colspan="10" style="text-align: center; padding: 40px;">
+                                            <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #dc143c;"></i>
+                                            <p style="margin-top: 10px; color: #666;">Loading submissions...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- System Settings Section -->
+                <section id="system" class="content-section">
+                    <div class="section-header-formal">
+                        <div class="header-content">
+                            <h2><i class="fas fa-cogs"></i> System Settings</h2>
+                            <p class="section-description">Configure system preferences and application settings</p>
+                        </div>
+                        <button class="btn-formal btn-success" onclick="adminDashboard.saveSystemSettings()">
+                            <i class="fas fa-save"></i>
+                            <span>Save All Settings</span>
+                        </button>
+                    </div>
+
+                    <!-- Settings Grid -->
+                    <div class="settings-grid-modern">
+                        <!-- General Settings Card -->
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <h3><i class="fas fa-sliders-h"></i> General Settings</h3>
+                            </div>
+                            <div class="settings-card-body">
+                                <div class="setting-item-modern">
+                                    <div class="setting-info">
+                                        <label class="setting-label">System Name</label>
+                                        <p class="setting-description">Display name for the application</p>
+                                    </div>
+                                    <input type="text" id="settingSystemName" value="Spartan Data" class="setting-input">
+                                </div>
+
+                                <div class="setting-item-modern">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Records Per Page</label>
+                                        <p class="setting-description">Number of records to display per page</p>
+                                    </div>
+                                    <select id="settingRecordsPerPage" class="setting-select">
+                                        <option value="10">10 records</option>
+                                        <option value="25" selected>25 records</option>
+                                        <option value="50">50 records</option>
+                                        <option value="100">100 records</option>
+                                    </select>
+                                </div>
+
+                                <div class="setting-item-modern">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Date Format</label>
+                                        <p class="setting-description">How dates are displayed in the system</p>
+                                    </div>
+                                    <select id="settingDateFormat" class="setting-select">
+                                        <option value="MM/DD/YYYY">MM/DD/YYYY (US)</option>
+                                        <option value="DD/MM/YYYY" selected>DD/MM/YYYY (International)</option>
+                                        <option value="YYYY-MM-DD">YYYY-MM-DD (ISO)</option>
+                                    </select>
+                                </div>
+
+                                <div class="setting-item-modern">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Maintenance Mode</label>
+                                        <p class="setting-description">Temporarily disable user access for maintenance</p>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="settingMaintenanceMode">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submission Settings Card -->
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <h3><i class="fas fa-file-upload"></i> Submission Settings</h3>
+                            </div>
+                            <div class="settings-card-body">
+                                <div class="setting-item-modern">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Auto-Approve Submissions</label>
+                                        <p class="setting-description">Automatically approve submissions from trusted users</p>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="settingAutoApprove">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+
+                                <div class="setting-item-modern">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Require Approval</label>
+                                        <p class="setting-description">All submissions must be approved by admin</p>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="settingRequireApproval" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+
+                                <div class="setting-item-modern">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Max File Size (MB)</label>
+                                        <p class="setting-description">Maximum file size for uploads</p>
+                                    </div>
+                                    <input type="number" id="settingMaxFileSize" value="10" min="1" max="100" class="setting-input">
+                                </div>
+
+                                <div class="setting-item-modern">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Submission Deadline Days</label>
+                                        <p class="setting-description">Days before deadline to send reminders</p>
+                                    </div>
+                                    <input type="number" id="settingDeadlineDays" value="7" min="1" max="30" class="setting-input">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Security Settings Card -->
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <h3><i class="fas fa-shield-alt"></i> Security Settings</h3>
+                            </div>
+                            <div class="settings-card-body">
+                                <div class="setting-item-modern">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Two-Factor Authentication</label>
+                                        <p class="setting-description">Require 2FA for admin users</p>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="settingTwoFactor">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+
+                                <div class="setting-item-modern">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Session Timeout</label>
+                                        <p class="setting-description">Auto-logout after inactivity</p>
+                                    </div>
+                                    <select id="settingSessionTimeout" class="setting-select">
+                                        <option value="15">15 minutes</option>
+                                        <option value="30" selected>30 minutes</option>
+                                        <option value="60">1 hour</option>
+                                        <option value="120">2 hours</option>
+                                    </select>
+                                </div>
+
+                                <div class="setting-item-modern">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Password Minimum Length</label>
+                                        <p class="setting-description">Minimum characters required</p>
+                                    </div>
+                                    <input type="number" id="settingPasswordLength" value="8" min="6" max="20" class="setting-input">
+                                </div>
+
+                                <div class="setting-item-modern">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Failed Login Attempts</label>
+                                        <p class="setting-description">Lock account after failed attempts</p>
+                                    </div>
+                                    <input type="number" id="settingFailedAttempts" value="5" min="3" max="10" class="setting-input">
+                                </div>
+
+                                <div class="setting-item-modern">
+                                    <div class="setting-info">
+                                        <label class="setting-label">IP Whitelist</label>
+                                        <p class="setting-description">Restrict access to specific IPs</p>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="settingIPWhitelist">
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Backup & Data Settings Card -->
+                        <div class="settings-card">
+                            <div class="settings-card-header">
+                                <h3><i class="fas fa-database"></i> Backup & Data</h3>
+                            </div>
+                            <div class="settings-card-body">
+                                <div class="setting-item-modern">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Auto Backup</label>
+                                        <p class="setting-description">Automatically backup database</p>
+                                    </div>
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" id="settingAutoBackup" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+
+                                <div class="setting-item-modern">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Backup Frequency</label>
+                                        <p class="setting-description">How often to backup</p>
+                                    </div>
+                                    <select id="settingBackupFrequency" class="setting-select">
+                                        <option value="daily" selected>Daily</option>
+                                        <option value="weekly">Weekly</option>
+                                        <option value="monthly">Monthly</option>
+                                    </select>
+                                </div>
+
+                                <div class="setting-item-modern">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Data Retention (Days)</label>
+                                        <p class="setting-description">Keep data for specified days</p>
+                                    </div>
+                                    <input type="number" id="settingDataRetention" value="365" min="30" max="3650" class="setting-input">
+                                </div>
+
+                                <div class="setting-item-modern">
+                                    <div class="setting-info">
+                                        <label class="setting-label">Export Format</label>
+                                        <p class="setting-description">Default format for exports</p>
+                                    </div>
+                                    <select id="settingExportFormat" class="setting-select">
+                                        <option value="csv" selected>CSV</option>
+                                        <option value="excel">Excel</option>
+                                        <option value="json">JSON</option>
+                                        <option value="pdf">PDF</option>
+                                    </select>
+                                </div>
+
+                                <div class="setting-action-buttons">
+                                    <button class="btn-setting-action btn-backup" onclick="adminDashboard.createBackup()">
+                                        <i class="fas fa-download"></i>
+                                        Create Backup Now
+                                    </button>
+                                    <button class="btn-setting-action btn-restore" onclick="adminDashboard.restoreBackup()">
+                                        <i class="fas fa-upload"></i>
+                                        Restore from Backup
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Info Banner -->
+                    <div class="settings-info-banner">
+                        <i class="fas fa-info-circle"></i>
+                        <div>
+                            <strong>Note:</strong> Changes to system settings will affect all users. Make sure to test settings before applying them in production.
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Security Section -->
+                <section id="security" class="content-section">
+                    <div class="section-header-formal">
+                        <div class="header-content">
+                            <h2><i class="fas fa-shield-alt"></i> Security Dashboard</h2>
+                            <p class="section-description">Monitor system security and access logs</p>
+                        </div>
+                    </div>
+                    <div class="security-grid">
+                        <div class="security-card">
+                            <h3><i class="fas fa-exclamation-triangle"></i> Login Attempts</h3>
+                            <div class="security-metrics">
+                                <div class="metric-item">
+                                    <span class="metric-label">Failed Attempts (24h)</span>
+                                    <span class="metric-value danger">12</span>
+                                </div>
+                                <div class="metric-item">
+                                    <span class="metric-label">Blocked IPs</span>
+                                    <span class="metric-value">3</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="security-card">
+                            <h3><i class="fas fa-bell"></i> System Alerts</h3>
+                            <div class="alert-list">
+                                <div class="alert-item warning">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                    <span>High CPU usage detected</span>
+                                </div>
+                                <div class="alert-item info">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>Backup completed successfully</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Data Tables Section -->
+                <section id="reports" class="content-section">
+                    <div class="section-header-formal">
+                        <div class="header-content">
+                            <h2><i class="fas fa-table"></i> Data Tables Management</h2>
+                            <p class="section-description">View, edit, and manage submitted data from all reports</p>
+                        </div>
+                    </div>
+
+                    <!-- Report Type Selector -->
+                    <div class="data-table-controls">
+                        <div class="control-group">
+                            <label for="reportTypeSelect"><i class="fas fa-filter"></i> Select Report Type:</label>
+                            <select id="reportTypeSelect" class="formal-select">
+                                <option value="">-- Select a Report --</option>
+                                <option value="campuspopulation">Campus Population</option>
+                                <option value="admissiondata">Admission Data</option>
+                                <option value="enrollmentdata">Enrollment Data</option>
+                                <option value="graduatesdata">Graduates Data</option>
+                                <option value="employee">Employee Data</option>
+                                <option value="leaveprivilege">Leave Privilege</option>
+                                <option value="disabilitydata">Disability Data</option>
+                                <option value="wastedata">Waste Data</option>
+                                <option value="vehicledata">Vehicle Data</option>
+                                <option value="fueldata">Fuel Data</option>
+                                <option value="waterdata">Water Data</option>
+                                <option value="electricitydata">Electricity Data</option>
+                            </select>
+                        </div>
+                        <div class="control-group">
+                            <button class="btn-formal btn-primary" onclick="adminDashboard.loadTableData()">
+                                <i class="fas fa-sync"></i>
+                                <span>Load Data</span>
+                            </button>
+                            <button class="btn-formal btn-success" onclick="adminDashboard.exportTableData()">
+                                <i class="fas fa-download"></i>
+                                <span>Export to Excel</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Data Table Container -->
+                    <div id="dataTableContainer" class="data-table-container">
+                        <div class="empty-state">
+                            <i class="fas fa-table"></i>
+                            <h3>No Report Selected</h3>
+                            <p>Please select a report type from the dropdown above to view data</p>
+                        </div>
+                    </div>
+
+                    <!-- Table Info -->
+                    <div id="tableInfo" class="table-info" style="display: none;">
+                        <div class="info-item">
+                            <i class="fas fa-database"></i>
+                            <span>Total Records: <strong id="totalRecords">0</strong></span>
+                        </div>
+                        <div class="info-item">
+                            <i class="fas fa-calendar"></i>
+                            <span>Last Updated: <strong id="lastUpdated">-</strong></span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- User Management Modals -->
+    <!-- Add/Edit User Modal - Enhanced Design -->
+    <div id="userModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header-gradient">
+                <div class="modal-header-content">
+                    <div class="modal-icon">
+                        <i class="fas fa-user-plus"></i>
+                    </div>
+                    <div>
+                        <h2 id="userModalTitle">Add New User</h2>
+                        <p class="modal-subtitle">Create a new user account for the system</p>
+                    </div>
+                </div>
+                <button class="modal-close-modern" onclick="closeUserModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="userForm" onsubmit="saveUser(event)">
+                <input type="hidden" id="userId" name="userId">
+                
+                <div class="modal-body-modern">
+                    <!-- Form content here -->
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="admin-dashboard-clean.js"></script>
+</body>
+</html>

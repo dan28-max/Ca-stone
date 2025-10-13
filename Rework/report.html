@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Spartan Data - Reports</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo-section">
+      <img src="assets/logo.jpg" alt="Logo" class="logo" />
+      <h1 class="title">Spartan Data</h1>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html"><i class="fas fa-chart-line"></i> Dashboard</a>
+      <a href="report.html" class="active"><i class="fas fa-folder-open"></i> Report</a>
+      <a href="submitted.html"><i class="fas fa-paper-plane"></i> Submitted</a>
+      <a href="drafts.html"><i class="fas fa-file-alt"></i> Drafts</a>
+      <a href="export.html"><i class="fas fa-download"></i> Export Center</a>
+    </nav>
+  </div>
+
+  <div class="main-container">
+    <div class="top-nav">
+      <div class="profile-dropdown">
+        <img src="assets/profile.jpg" alt="Profile" class="profile-pic" onclick="toggleDropdown()" />
+        <div class="dropdown-menu" id="dropdownMenu">
+          <a href="#">Profile</a>
+          <a href="#">Settings</a>
+          <a href="#" onclick="logout()">Logout</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <h2>Select Report</h2>
+      <select id="reportDropdown" class="report-select" onchange="showTable()">
+        <option value="">-- Choose a report --</option>
+      </select>
+      <div id="tablesContainer"></div>
+    </div>
+  </div>
+
+  <div id="confirmationModal" class="modal-overlay" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="modal-box" style="background: white; padding: 20px; border-radius: 8px; max-width: 400px; text-align: center;">
+      <p>Are you sure you want to submit this report? It will be sent to the admin for review.</p>
+      <div style="margin-top: 20px; gap: 10px; display: flex; justify-content: center;">
+        <button onclick="confirmSave(true)" class="btn" style="background: #b30000; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Yes, Submit</button>
+        <button onclick="confirmSave(false)" class="btn" style="background: #ccc; color: black; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const tables = {
+      admissiondata: ["Campus", "Semester", "Academic Year", "Category", "Program", "Male", "Female"],
+      enrollmentdata: ["Campus", "Academic Year", "Semester", "College", "Graduate/Undergrad", "Program/Course", "Male", "Female"],
+      graduatesdata: ["Campus", "Academic Year", "Semester", "Degree Level", "Subject Area", "Course", "Category/Total No. of Applicants", "Male", "Female"],
+      employee: ["Campus", "Date Generated", "Category", "Faculty Rank", "Sex", "Status", "Date Hired"],
+      leaveprivilege: ["Campus", "Leave Type", "Employee Name", "Duration Days", "Equivalent Pay"],
+      libraryvisitor: ["Campus", "Visit Date", "Category", "Sex", "Total Visitors"],
+      pwd: ["Campus", "Year", "No. of PWD Students", "No. of PWD Employees", "Type of Disability", "Sex"],
+      waterconsumption: ["Campus", "Date", "Category", "Prev Reading", "Current Reading", "Quantity (m^3)", "Total Amount", "Price/m^3", "Month", "Year", "Remarks"],
+      treatedwastewater: ["Campus", "Date", "Treated Volume", "Reused Volume", "Effluent Volume"],
+      electricityconsumption: ["Campus", "Category", "Month", "Year", "Prev Reading", "Current Reading", "Actual Consumption", "Multiplier", "Total Consumption", "Total Amount", "Price/kWh", "Remarks"],
+      solidwaste: ["Campus", "Month", "Year", "Waste Type", "Quantity", "Remarks"],
+      campuspopulation: ["Campus", "Year", "Students", "IS Students", "Employees", "Canteen", "Construction", "Total"],
+      foodwaste: ["Campus", "Date", "Quantity (kg)", "Remarks"],
+      fuelconsumption: ["Campus", "Date", "Driver", "Vehicle", "Plate No", "Fuel Type", "Description", "Transaction No", "Odometer", "Qty", "Total Amount"],
+      distancetraveled: ["Campus", "Travel Date", "Plate No", "Vehicle", "Fuel Type", "Start Mileage", "End Mileage", "Total KM"],
+      budgetexpenditure: ["Campus", "Year", "Particulars", "Category", "Budget Allocation", "Actual Expenditure", "Utilization Rate"],
+      flightaccommodation: ["Campus", "Department", "Year", "Traveler", "Purpose", "From", "To", "Country", "Type", "Rooms", "Nights"]
+    };
+
+    const officeReports = {
+      "Registrar": ["enrollmentdata", "graduatesdata"],
+      "HRMO": ["employee", "leaveprivilege"],
+      "Library": ["libraryvisitor"],
+      "Health Services": ["pwd"],
+      "EMU": ["waterconsumption", "treatedwastewater", "electricityconsumption", "solidwaste"],
+      "RGO": ["campuspopulation", "foodwaste"],
+      "GSO": ["fuelconsumption", "distancetraveled"],
+      "TAO": ["admissiondata"],
+      "Budget Office": ["budgetexpenditure"],
+      "All": ["flightaccommodation"]
+    };
+
+    function toggleDropdown() {
+      document.getElementById('dropdownMenu').classList.toggle('show');
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = "login.html";
+    }
+
+    window.onload = function () {
+      const userOffice = localStorage.getItem("userOffice");
+      const userEmail = localStorage.getItem("userEmail");
+      const dropdown = document.getElementById("reportDropdown");
+      
+      console.log('User Office:', userOffice);
+      console.log('User Email:', userEmail);
+      
+      // Function to populate dropdown with reports
+      function populateDropdown(reports) {
+        console.log('Populating dropdown with reports:', reports);
+        if (Array.isArray(reports) && reports.length > 0) {
+          // Sort reports alphabetically
+          reports.sort();
+          
+          // Add options to dropdown
+          reports.forEach(table => {
+            const option = document.createElement("option");
+            option.value = table;
+            option.textContent = table.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            dropdown.appendChild(option);
+          });
+        } else {
+          console.log('No reports found, showing message');
+          showNoReportsMessage();
+        }
+      }
+      
+      function showNoReportsMessage() {
+        const container = document.getElementById("tablesContainer");
+        container.innerHTML = `
+          <div class="empty-state" style="text-align: center; padding: 40px; background: #f9f9f9; border-radius: 8px; margin-top: 20px;">
+            <i class="fas fa-info-circle" style="font-size: 48px; color: #b30000; margin-bottom: 20px;"></i>
+            <h3>No Reports Assigned</h3>
+            <p>You don't have any reports assigned to you yet. Please contact your administrator to get access to reports.</p>
+          </div>
+        `;
+      }
+      
+      function showErrorMessage() {
+        const container = document.getElementById("tablesContainer");
+        container.innerHTML = `
+          <div class="empty-state" style="text-align: center; padding: 40px; background: #f9f9f9; border-radius: 8px; margin-top: 20px;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #b30000; margin-bottom: 20px;"></i>
+            <h3>Error Loading Reports</h3>
+            <p>There was a problem loading your assigned reports. Please try again later or contact support.</p>
+          </div>
+        `;
+      }
+      
+      // Always show all reports for now (testing mode)
+      console.log('Loading all reports for testing');
+      const allReports = Object.keys(tables);
+      populateDropdown(allReports);
+      
+      // Skip API call for now
+      return;
+      
+      // Fallback: If no user data, show all reports for testing
+      if (!userOffice || !userEmail) {
+        console.log('No user session found, loading all reports for testing');
+        const allReports = Object.keys(tables);
+        populateDropdown(allReports);
+        return;
+      }
+      
+      // Fetch reports assigned to this user
+      const form = new FormData();
+      form.append('office', userOffice);
+      form.append('user_email', userEmail);
+      
+      fetch('api/get_allowed_reports.php', { method: 'POST', body: form })
+        .then(response => {
+          // Check if response is JSON
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            return response.json();
+          } else {
+            throw new Error('Non-JSON response from server');
+          }
+        })
+        .then(reports => {
+          populateDropdown(reports);
+        })
+        .catch(error => {
+          console.error('Error fetching assigned reports:', error);
+          // Fallback to showing all reports for testing
+          console.log('API failed, loading all reports for testing');
+          const allReports = Object.keys(tables);
+          populateDropdown(allReports);
+        });
+    };
+
+    function showTable() {
+      const container = document.getElementById("tablesContainer");
+      const selected = document.getElementById("reportDropdown").value;
+      container.innerHTML = "";
+
+      if (!selected || !tables[selected]) return;
+
+      const tableHTML = `
+        <div class="report-table">
+          <h3>${selected.replace(/([a-z])([A-Z])/g, '$1 $2')}</h3>
+          <button class="add-row-btn btn" onclick="addRow('${selected}')">+ Add Row</button>
+          <div class="table-wrapper">
+            <table id="${selected}-table" class="styled-table">
+              <thead>
+                <tr>
+                  ${tables[selected].map(col => `<th>${col}</th>`).join('')}
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+            <button class="submit-btn btn">Submit</button>
+            <button class="btn add-row-btn save-draft-btn" title="Save as draft">Save Draft</button>
+          </div>
+        </div>
+      `;
+      container.innerHTML = tableHTML;
+    }
+
+    function addRow(tableId) {
+      const tbody = document.querySelector(`#${tableId}-table tbody`);
+      const columns = tables[tableId];
+      const row = document.createElement("tr");
+
+      columns.forEach((col, colIndex) => {
+        const cell = document.createElement("td");
+
+        if (
+          (tableId === "admissiondata" || tableId === "foodwaste" || tableId === "campuspopulation" || tableId === "libraryvisitor" ||
+           tableId === "enrollmentdata" || tableId === "graduatesdata" || tableId === "employee" ||
+           tableId === "leaveprivilege" || tableId === "pwd" || tableId === "waterconsumption" ||
+           tableId === "treatedwastewater" || tableId === "electricityconsumption" || tableId === "solidwaste" ||
+           tableId === "fuelconsumption" || tableId === "distancetraveled" || tableId === "budgetexpenditure" || 
+           tableId === "flightaccommodation") &&
+          colIndex === 0
+        ) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Campus</option>
+            <option value="Alangilan">Alangilan</option>
+            <option value="Nasugbo">Nasugbo</option>
+            <option value="Balayan">Balayan</option>
+            <option value="Malvar">Malvar</option>
+            <option value="Lemery">Lemery</option>
+            <option value="Lipa">Lipa</option>
+            <option value="Lobo">Lobo</option>
+            <option value="Mabini">Mabini</option>
+            <option value="Pablo Borbon">Pablo Borbon</option>
+            <option value="Rosario">Rosario</option>
+            <option value="San Juan">San Juan</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "distancetraveled" && colIndex === 2) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Plate No</option>
+            <option value="SJD 280">SJD 280</option>
+            <option value="BOU 837">BOU 837</option>
+            <option value="SKT 626">SKT 626</option>
+            <option value="S6C486">S6C486</option>
+            <option value="SFN 552">SFN 552</option>
+            <option value="SEU 721">SEU 721</option>
+            <option value="S5W613">S5W613</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "distancetraveled" && colIndex === 3) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Vehicle</option>
+            <option value="Foton Bus">Foton Bus</option>
+            <option value="Honda Civic">Honda Civic</option>
+            <option value="Hyundai Starex">Hyundai Starex</option>
+            <option value="Isuzu Sportivo">Isuzu Sportivo</option>
+            <option value="Isuzu Travis">Isuzu Travis</option>
+            <option value="Mitshubishi Adventure">Mitshubishi Adventure</option>
+            <option value="Mitshubishi L300">Mitshubishi L300</option>
+            <option value="Nissan Urvan">Nissan Urvan</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "distancetraveled" && colIndex === 4) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Fuel Type</option>
+            <option value="Diesel">Diesel</option>
+            <option value="Gasoline">Gasoline</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "fuelconsumption" && colIndex === 3) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Vehicle</option>
+            <option value="Foton Bus">Foton Bus</option>
+            <option value="Honda Civic">Honda Civic</option>
+            <option value="Hyundai Starex">Hyundai Starex</option>
+            <option value="Isuzu Sportivo">Isuzu Sportivo</option>
+            <option value="Isuzu Travis">Isuzu Travis</option>
+            <option value="Mitshubishi Adventure">Mitshubishi Adventure</option>
+            <option value="Mitshubishi L300">Mitshubishi L300</option>
+            <option value="Nissan Urvan">Nissan Urvan</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "fuelconsumption" && colIndex === 4) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Plate No</option>
+            <option value="SJD 280">SJD 280</option>
+            <option value="BOU 837">BOU 837</option>
+            <option value="SKT 626">SKT 626</option>
+            <option value="S6C486">S6C486</option>
+            <option value="SFN 552">SFN 552</option>
+            <option value="SEU 721">SEU 721</option>
+            <option value="S5W613">S5W613</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "fuelconsumption" && colIndex === 5) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Fuel Type</option>
+            <option value="Diesel">Diesel</option>
+            <option value="Gasoline">Gasoline</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "solidwaste" && colIndex === 1) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Month</option>
+            <option value="January">January</option>
+            <option value="February">February</option>
+            <option value="March">March</option>
+            <option value="April">April</option>
+            <option value="May">May</option>
+            <option value="June">June</option>
+            <option value="July">July</option>
+            <option value="August">August</option>
+            <option value="September">September</option>
+            <option value="October">October</option>
+            <option value="November">November</option>
+            <option value="December">December</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "solidwaste" && colIndex === 3) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Waste Type</option>
+            <option value="Biodegradable">Biodegradable</option>
+            <option value="Hazardous">Hazardous</option>
+            <option value="Recyclable">Recyclable</option>
+            <option value="Residual">Residual</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "electricityconsumption" && colIndex === 1) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Category</option>
+            <option value="Main">Main</option>
+            <option value="Solar">Solar</option>
+            <option value="Other">Other</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "electricityconsumption" && colIndex === 2) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Month</option>
+            <option value="January">January</option>
+            <option value="February">February</option>
+            <option value="March">March</option>
+            <option value="April">April</option>
+            <option value="May">May</option>
+            <option value="June">June</option>
+            <option value="July">July</option>
+            <option value="August">August</option>
+            <option value="September">September</option>
+            <option value="October">October</option>
+            <option value="November">November</option>
+            <option value="December">December</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "waterconsumption" && colIndex === 1) {
+          const input = document.createElement("input");
+          input.type = "date";
+          input.className = "date-input";
+          cell.appendChild(input);
+        }
+        else if (tableId === "waterconsumption" && colIndex === 2) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Category</option>
+            <option value="Mains">Mains</option>
+            <option value="Deepwell">Deepwell</option>
+            <option value="Drinking Water">Drinking Water</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "leaveprivilege" && colIndex === 1) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Leave Type</option>
+            <option value="Maternity Leave">Maternity Leave</option>
+            <option value="Paternity Leave">Paternity Leave</option>
+            <option value="Solo Parent Leave">Solo Parent Leave</option>
+            <option value="10 Days VAWC Leave">10 Days VAWC Leave</option>
+            <option value="Special Leave Benefits for Women">Special Leave Benefits for Women</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "employee" && colIndex === 1) {
+          const input = document.createElement("input");
+          input.type = "date";
+          input.className = "date-input";
+          cell.appendChild(input);
+        }
+        else if (tableId === "employee" && colIndex === 2) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Category</option>
+            <option value="Teaching">Teaching</option>
+            <option value="Non-Teaching">Non-Teaching</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "employee" && colIndex === 3) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Faculty Rank</option>
+            <option value="Teaching">Teaching</option>
+            <option value="Non-Teaching">Non-Teaching</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "employee" && colIndex === 4) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Sex</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "graduatesdata" && colIndex === 1) {
+          cell.contentEditable = "true";
+        }
+        else if (tableId === "graduatesdata" && colIndex === 2) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Semester</option>
+            <option value="First Semester">First Semester</option>
+            <option value="Midterm Semester">Midterm Semester</option>
+            <option value="Second Semester">Second Semester</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "graduatesdata" && colIndex === 3) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Degree Level</option>
+            <option value="Undergraduate Program">Undergraduate Program</option>
+            <option value="Graduate Program">Graduate Program</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "graduatesdata" && colIndex === 4) {
+          cell.contentEditable = "true";
+        }
+        else if (tableId === "graduatesdata" && colIndex === 5) {
+          cell.contentEditable = "true";
+        }
+        else if (tableId === "graduatesdata" && colIndex === 6) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Category</option>
+            <option value="Total No. Applicants">Total No. Applicants</option>
+            <option value="Total No. Graduates">Total No. Graduates</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "graduatesdata" && (colIndex === 7 || colIndex === 8)) {
+          cell.contentEditable = "true";
+        }
+        else if (
+          (tableId === "foodwaste" || tableId === "campuspopulation" || tableId === "libraryvisitor") &&
+          colIndex === 1
+        ) {
+          const input = document.createElement("input");
+          input.type = "date";
+          input.className = "date-input";
+          cell.appendChild(input);
+        }
+        else if (tableId === "libraryvisitor" && colIndex === 2) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Category</option>
+            <option value="Internal">Internal</option>
+            <option value="External">External</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "libraryvisitor" && colIndex === 3) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Sex</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "distancetraveled" && colIndex === 2) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Plate No</option>
+            <option value="SJD 280">SJD 280</option>
+            <option value="BOU 837">BOU 837</option>
+            <option value="SKT 626">SKT 626</option>
+            <option value="S6C486">S6C486</option>
+            <option value="SFN 552">SFN 552</option>
+            <option value="SEU 721">SEU 721</option>
+            <option value="S5W613">S5W613</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "distancetraveled" && colIndex === 3) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Vehicle</option>
+            <option value="Foton Bus">Foton Bus</option>
+            <option value="Honda Civic">Honda Civic</option>
+            <option value="Hyundai Starex">Hyundai Starex</option>
+            <option value="Isuzu Sportivo">Isuzu Sportivo</option>
+            <option value="Isuzu Travis">Isuzu Travis</option>
+            <option value="Mitshubishi Adventure">Mitshubishi Adventure</option>
+            <option value="Mitshubishi L300">Mitshubishi L300</option>
+            <option value="Nissan Urvan">Nissan Urvan</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "distancetraveled" && colIndex === 4) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Fuel Type</option>
+            <option value="Diesel">Diesel</option>
+            <option value="Gasoline">Gasoline</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "fuelconsumption" && colIndex === 3) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Vehicle</option>
+            <option value="Foton Bus">Foton Bus</option>
+            <option value="Honda Civic">Honda Civic</option>
+            <option value="Hyundai Starex">Hyundai Starex</option>
+            <option value="Isuzu Sportivo">Isuzu Sportivo</option>
+            <option value="Isuzu Travis">Isuzu Travis</option>
+            <option value="Mitshubishi Adventure">Mitshubishi Adventure</option>
+            <option value="Mitshubishi L300">Mitshubishi L300</option>
+            <option value="Nissan Urvan">Nissan Urvan</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "fuelconsumption" && colIndex === 4) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Plate No</option>
+            <option value="SJD 280">SJD 280</option>
+            <option value="BOU 837">BOU 837</option>
+            <option value="SKT 626">SKT 626</option>
+            <option value="S6C486">S6C486</option>
+            <option value="SFN 552">SFN 552</option>
+            <option value="SEU 721">SEU 721</option>
+            <option value="S5W613">S5W613</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "fuelconsumption" && colIndex === 5) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Fuel Type</option>
+            <option value="Diesel">Diesel</option>
+            <option value="Gasoline">Gasoline</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "solidwaste" && colIndex === 1) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Month</option>
+            <option value="January">January</option>
+            <option value="February">February</option>
+            <option value="March">March</option>
+            <option value="April">April</option>
+            <option value="May">May</option>
+            <option value="June">June</option>
+            <option value="July">July</option>
+            <option value="August">August</option>
+            <option value="September">September</option>
+            <option value="October">October</option>
+            <option value="November">November</option>
+            <option value="December">December</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "solidwaste" && colIndex === 3) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Waste Type</option>
+            <option value="Biodegradable">Biodegradable</option>
+            <option value="Hazardous">Hazardous</option>
+            <option value="Recyclable">Recyclable</option>
+            <option value="Residual">Residual</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "electricityconsumption" && colIndex === 1) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Category</option>
+            <option value="Main">Main</option>
+            <option value="Solar">Solar</option>
+            <option value="Other">Other</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "electricityconsumption" && colIndex === 2) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Month</option>
+            <option value="January">January</option>
+            <option value="February">February</option>
+            <option value="March">March</option>
+            <option value="April">April</option>
+            <option value="May">May</option>
+            <option value="June">June</option>
+            <option value="July">July</option>
+            <option value="August">August</option>
+            <option value="September">September</option>
+            <option value="October">October</option>
+            <option value="November">November</option>
+            <option value="December">December</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "waterconsumption" && colIndex === 1) {
+          const input = document.createElement("input");
+          input.type = "date";
+          input.className = "date-input";
+          cell.appendChild(input);
+        }
+        else if (tableId === "waterconsumption" && colIndex === 2) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Category</option>
+            <option value="Mains">Mains</option>
+            <option value="Deepwell">Deepwell</option>
+            <option value="Drinking Water">Drinking Water</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "leaveprivilege" && colIndex === 1) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Leave Type</option>
+            <option value="Maternity Leave">Maternity Leave</option>
+            <option value="Paternity Leave">Paternity Leave</option>
+            <option value="Solo Parent Leave">Solo Parent Leave</option>
+            <option value="10 Days VAWC Leave">10 Days VAWC Leave</option>
+            <option value="Special Leave Benefits for Women">Special Leave Benefits for Women</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "employee" && colIndex === 1) {
+          const input = document.createElement("input");
+          input.type = "date";
+          input.className = "date-input";
+          cell.appendChild(input);
+        }
+        else if (tableId === "employee" && colIndex === 2) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Category</option>
+            <option value="Teaching">Teaching</option>
+            <option value="Non-Teaching">Non-Teaching</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "employee" && colIndex === 3) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Faculty Rank</option>
+            <option value="Professor">Professor</option>
+            <option value="Associate Professor">Associate Professor</option>
+            <option value="Assistant Professor">Assistant Professor</option>
+            <option value="Instructor">Instructor</option>
+            <option value="Lecturer">Lecturer</option>
+            <option value="Administrative Staff">Administrative Staff</option>
+            <option value="Support Staff">Support Staff</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "employee" && colIndex === 4) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Sex</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "graduatesdata" && colIndex === 1) {
+          const input = document.createElement("input");
+          input.type = "number";
+          input.placeholder = "Enter Academic Year";
+          input.min = "2020";
+          input.max = "2030";
+          cell.appendChild(input);
+        }
+        else if (tableId === "graduatesdata" && colIndex === 2) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Semester</option>
+            <option value="First Semester">First Semester</option>
+            <option value="Midterm Semester">Midterm Semester</option>
+            <option value="Second Semester">Second Semester</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "graduatesdata" && colIndex === 3) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Degree Level</option>
+            <option value="Undergraduate Program">Undergraduate Program</option>
+            <option value="Graduate Program">Graduate Program</option>
+            <option value="Postgraduate Program">Postgraduate Program</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "graduatesdata" && colIndex === 4) {
+          const input = document.createElement("input");
+          input.type = "text";
+          input.placeholder = "Enter Subject Area";
+          cell.appendChild(input);
+        }
+        else if (tableId === "graduatesdata" && colIndex === 5) {
+          const input = document.createElement("input");
+          input.type = "text";
+          input.placeholder = "Enter Course";
+          cell.appendChild(input);
+        }
+        else if (tableId === "graduatesdata" && colIndex === 6) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Category</option>
+            <option value="Total No. Applicants">Total No. Applicants</option>
+            <option value="Total No. Graduates">Total No. Graduates</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "graduatesdata" && (colIndex === 7 || colIndex === 8)) {
+          const input = document.createElement("input");
+          input.type = "number";
+          input.min = "0";
+          input.placeholder = colIndex === 7 ? "Male Count" : "Female Count";
+          cell.appendChild(input);
+        }
+        else if (
+          (tableId === "foodwaste" || tableId === "campuspopulation" || tableId === "libraryvisitor") &&
+          colIndex === 1
+        ) {
+          const input = document.createElement("input");
+          input.type = "date";
+          input.className = "date-input";
+          cell.appendChild(input);
+        }
+        else if (tableId === "libraryvisitor" && colIndex === 2) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Category</option>
+            <option value="Internal">Internal</option>
+            <option value="External">External</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "libraryvisitor" && colIndex === 3) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Sex</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "budgetexpenditure" && colIndex === 3) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Category</option>
+            <option value="Personnel Services">Personnel Services</option>
+            <option value="Maintenance and Other Operating Expenses">Maintenance and Other Operating Expenses</option>
+            <option value="Capital Outlay">Capital Outlay</option>
+            <option value="Financial Expenses">Financial Expenses</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "flightaccommodation" && colIndex === 8) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Type</option>
+            <option value="Domestic">Domestic</option>
+            <option value="International">International</option>
+          `;
+          cell.appendChild(select);
+        }
+        // Additional dropdowns for admissiondata
+        else if (tableId === "admissiondata" && colIndex === 1) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Semester</option>
+            <option value="First Semester">First Semester</option>
+            <option value="Midterm Semester">Midterm Semester</option>
+            <option value="Second Semester">Second Semester</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "admissiondata" && colIndex === 2) {
+          const input = document.createElement("input");
+          input.type = "number";
+          input.min = "2020";
+          input.max = "2030";
+          input.placeholder = "Enter Academic Year";
+          cell.appendChild(input);
+        }
+        else if (tableId === "admissiondata" && colIndex === 3) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Category</option>
+            <option value="Regular">Regular</option>
+            <option value="Transferee">Transferee</option>
+            <option value="Shiftee">Shiftee</option>
+            <option value="Second Courser">Second Courser</option>
+            <option value="Foreign Student">Foreign Student</option>
+          `;
+          cell.appendChild(select);
+        }
+        // Additional dropdowns for enrollmentdata
+        else if (tableId === "enrollmentdata" && colIndex === 1) {
+          const input = document.createElement("input");
+          input.type = "number";
+          input.min = "2020";
+          input.max = "2030";
+          input.placeholder = "Enter Academic Year";
+          cell.appendChild(input);
+        }
+        else if (tableId === "enrollmentdata" && colIndex === 2) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Semester</option>
+            <option value="First Semester">First Semester</option>
+            <option value="Midterm Semester">Midterm Semester</option>
+            <option value="Second Semester">Second Semester</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "enrollmentdata" && colIndex === 4) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Level</option>
+            <option value="Graduate">Graduate</option>
+            <option value="Undergraduate">Undergraduate</option>
+          `;
+          cell.appendChild(select);
+        }
+        // Additional dropdowns for treatedwastewater
+        else if (tableId === "treatedwastewater" && colIndex === 1) {
+          const input = document.createElement("input");
+          input.type = "date";
+          input.className = "date-input";
+          cell.appendChild(input);
+        }
+        // Additional dropdowns for employee
+        else if (tableId === "employee" && colIndex === 5) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Status</option>
+            <option value="Regular">Regular</option>
+            <option value="Contractual">Contractual</option>
+            <option value="Part-time">Part-time</option>
+            <option value="Probationary">Probationary</option>
+            <option value="Casual">Casual</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "employee" && colIndex === 6) {
+          const input = document.createElement("input");
+          input.type = "date";
+          input.className = "date-input";
+          cell.appendChild(input);
+        }
+        // Additional dropdowns for pwd
+        else if (tableId === "pwd" && colIndex === 0) {
+          // Campus dropdown
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Campus</option>
+            <option value="Alangilan">Alangilan</option>
+            <option value="Pablo Borbon">Pablo Borbon</option>
+            <option value="Lipa">Lipa</option>
+            <option value="Nasugbu">Nasugbu</option>
+            <option value="Balayan">Balayan</option>
+            <option value="Malvar">Malvar</option>
+            <option value="Lemery">Lemery</option>
+            <option value="Lobo">Lobo</option>
+            <option value="Mabini">Mabini</option>
+            <option value="Rosario">Rosario</option>
+            <option value="San Juan">San Juan</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "pwd" && colIndex === 1) {
+          // Year dropdown
+          const select = document.createElement("select");
+          const currentYear = new Date().getFullYear();
+          let yearOptions = '<option value="">Select Year</option>';
+          for (let year = 2020; year <= currentYear + 5; year++) {
+            yearOptions += `<option value="${year}">${year}</option>`;
+          }
+          select.innerHTML = yearOptions;
+          cell.appendChild(select);
+        }
+        else if (tableId === "pwd" && colIndex === 2) {
+          // No. of PWD Students - number input
+          const input = document.createElement("input");
+          input.type = "number";
+          input.min = "0";
+          input.placeholder = "Enter number of PWD students";
+          cell.appendChild(input);
+        }
+        else if (tableId === "pwd" && colIndex === 3) {
+          // No. of PWD Employees - number input
+          const input = document.createElement("input");
+          input.type = "number";
+          input.min = "0";
+          input.placeholder = "Enter number of PWD employees";
+          cell.appendChild(input);
+        }
+        else if (tableId === "pwd" && colIndex === 4) {
+          // Type of Disability dropdown
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Disability Type</option>
+            <option value="Visual Impairment">Visual Impairment</option>
+            <option value="Hearing Impairment">Hearing Impairment</option>
+            <option value="Physical Disability">Physical Disability</option>
+            <option value="Intellectual Disability">Intellectual Disability</option>
+            <option value="Learning Disability">Learning Disability</option>
+            <option value="Psychosocial Disability">Psychosocial Disability</option>
+            <option value="Multiple Disabilities">Multiple Disabilities</option>
+            <option value="Speech Impairment">Speech Impairment</option>
+            <option value="Chronic Illness">Chronic Illness</option>
+            <option value="Other">Other</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "pwd" && colIndex === 5) {
+          // Sex dropdown
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Sex</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          `;
+          cell.appendChild(select);
+        }
+        // Additional dropdowns for waterconsumption
+        else if (tableId === "waterconsumption" && colIndex === 8) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Month</option>
+            <option value="January">January</option>
+            <option value="February">February</option>
+            <option value="March">March</option>
+            <option value="April">April</option>
+            <option value="May">May</option>
+            <option value="June">June</option>
+            <option value="July">July</option>
+            <option value="August">August</option>
+            <option value="September">September</option>
+            <option value="October">October</option>
+            <option value="November">November</option>
+            <option value="December">December</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "waterconsumption" && colIndex === 9) {
+          const input = document.createElement("input");
+          input.type = "number";
+          input.min = "2020";
+          input.max = "2030";
+          input.placeholder = "Enter Year";
+          cell.appendChild(input);
+        }
+        // Additional dropdowns for campuspopulation
+        else if (tableId === "campuspopulation" && colIndex === 1) {
+          const input = document.createElement("input");
+          input.type = "number";
+          input.min = "2020";
+          input.max = "2030";
+          input.placeholder = "Enter Year";
+          cell.appendChild(input);
+        }
+        // Additional dropdowns for fuelconsumption
+        else if (tableId === "fuelconsumption" && colIndex === 1) {
+          const input = document.createElement("input");
+          input.type = "date";
+          input.className = "date-input";
+          cell.appendChild(input);
+        }
+        // Additional dropdowns for distancetraveled
+        else if (tableId === "distancetraveled" && colIndex === 1) {
+          const input = document.createElement("input");
+          input.type = "date";
+          input.className = "date-input";
+          cell.appendChild(input);
+        }
+        // Additional dropdowns for budgetexpenditure
+        else if (tableId === "budgetexpenditure" && colIndex === 1) {
+          const input = document.createElement("input");
+          input.type = "number";
+          input.min = "2020";
+          input.max = "2030";
+          input.placeholder = "Enter Year";
+          cell.appendChild(input);
+        }
+        // Additional dropdowns for flightaccommodation
+        else if (tableId === "flightaccommodation" && colIndex === 1) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Department</option>
+            <option value="Academic Affairs">Academic Affairs</option>
+            <option value="Student Affairs">Student Affairs</option>
+            <option value="Finance">Finance</option>
+            <option value="Human Resources">Human Resources</option>
+            <option value="Research">Research</option>
+            <option value="Extension">Extension</option>
+            <option value="Administration">Administration</option>
+            <option value="Library">Library</option>
+            <option value="IT Services">IT Services</option>
+          `;
+          cell.appendChild(select);
+        }
+        else if (tableId === "flightaccommodation" && colIndex === 2) {
+          const input = document.createElement("input");
+          input.type = "number";
+          input.min = "2020";
+          input.max = "2030";
+          input.placeholder = "Enter Year";
+          cell.appendChild(input);
+        }
+        else if (tableId === "flightaccommodation" && colIndex === 7) {
+          const select = document.createElement("select");
+          select.innerHTML = `
+            <option value="">Select Country</option>
+            <option value="Philippines">Philippines</option>
+            <option value="United States">United States</option>
+            <option value="Japan">Japan</option>
+            <option value="Singapore">Singapore</option>
+            <option value="Malaysia">Malaysia</option>
+            <option value="Thailand">Thailand</option>
+            <option value="South Korea">South Korea</option>
+            <option value="Australia">Australia</option>
+            <option value="Canada">Canada</option>
+            <option value="United Kingdom">United Kingdom</option>
+            <option value="Germany">Germany</option>
+            <option value="France">France</option>
+            <option value="China">China</option>
+            <option value="India">India</option>
+          `;
+          cell.appendChild(select);
+        }
+        else {
+          cell.contentEditable = "true";
+        }
+
+        row.appendChild(cell);
+      });
+
+      const actionCell = document.createElement("td");
+      const deleteBtn = document.createElement("button");
+      deleteBtn.innerText = "Delete";
+      deleteBtn.className = "delete-row-btn btn";
+      deleteBtn.onclick = () => row.remove();
+      actionCell.appendChild(deleteBtn);
+
+      row.appendChild(actionCell);
+      tbody.appendChild(row);
+    }
+
+    let pendingSave = null;
+
+    document.addEventListener("click", function (e) {
+      if (e.target.classList.contains("submit-btn")) {
+        console.log("Submit button clicked");
+        const report = document.getElementById("reportDropdown").value;
+        console.log("Selected report:", report);
+        if (!report) {
+          alert("Please select a report first.");
+          return;
+        }
+        
+        const table = document.querySelector(`#${report}-table`);
+        if (!table) {
+          alert("No table found for this report.");
+          return;
+        }
+        
+        const rows = table.querySelectorAll("tbody tr");
+        if (rows.length === 0) {
+          alert("Please add some data before submitting.");
+          return;
+        }
+        
+        pendingSave = report;
+        console.log("Showing confirmation modal");
+        document.getElementById("confirmationModal").style.display = "flex";
+      } else if (e.target.classList.contains("save-draft-btn")) {
+        const report = document.getElementById("reportDropdown").value;
+        if (!report) return alert("Please select a report first.");
+        const table = document.querySelector(`#${report}-table`);
+        if (!table) return alert("No data to save.");
+        const rows = table.querySelectorAll("tbody tr");
+        const data = [];
+        rows.forEach((row) => {
+          const rowData = [];
+          row.querySelectorAll("td").forEach((cell, index) => {
+            if (index < tables[report].length) {
+              const dateInput = cell.querySelector("input[type='date']");
+              const numberInput = cell.querySelector("input[type='number']");
+              const textInput = cell.querySelector("input[type='text']");
+              const select = cell.querySelector("select");
+              if (select) rowData.push(select.value);
+              else if (dateInput) rowData.push(dateInput.value);
+              else if (numberInput) rowData.push(numberInput.value);
+              else if (textInput) rowData.push(textInput.value);
+              else rowData.push(cell.innerText.trim());
+            }
+          });
+          if (rowData.length > 0) data.push(rowData);
+        });
+        const user = localStorage.getItem("userEmail") || "unknown@system.com";
+        const office = localStorage.getItem("userOffice") || "";
+        fetch("api/save_draft.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ report, data, user, office })
+        })
+          .then(r => r.json())
+          .then(j => {
+            if (j && j.success) alert("Draft saved.");
+            else alert(j.message || "Failed to save draft");
+          })
+          .catch(() => alert("Failed to save draft"));
+      }
+    });
+
+    function confirmSave(confirmed) {
+      document.getElementById("confirmationModal").style.display = "none";
+      if (!confirmed || !pendingSave) return;
+
+      const report = pendingSave;
+      const table = document.querySelector(`#${report}-table`);
+      const rows = table.querySelectorAll("tbody tr");
+      const data = [];
+
+      rows.forEach((row) => {
+        const rowData = [];
+        row.querySelectorAll("td").forEach((cell, index) => {
+          if (index < tables[report].length) {
+            const dateInput = cell.querySelector("input[type='date']");
+            const numberInput = cell.querySelector("input[type='number']");
+            const textInput = cell.querySelector("input[type='text']");
+            const select = cell.querySelector("select");
+            if (select) {
+              rowData.push(select.value);
+            } else if (dateInput) {
+              rowData.push(dateInput.value);
+            } else if (numberInput) {
+              rowData.push(numberInput.value);
+            } else if (textInput) {
+              rowData.push(textInput.value);
+            } else {
+              rowData.push(cell.innerText.trim());
+            }
+          }
+        });
+
+        if (rowData.length > 0) {
+          data.push(rowData);
+        }
+      });
+
+      const submitted_by = localStorage.getItem("userEmail") || "unknown@system.com";
+      
+      // Convert data to proper format for submission system
+      const formattedData = [];
+      const columns = tables[report];
+      
+      data.forEach(row => {
+        const rowData = {};
+        row.forEach((value, index) => {
+          if (index < columns.length) {
+            rowData[columns[index]] = value;
+          }
+        });
+        formattedData.push(rowData);
+      });
+
+      // Use the new submit_report.php endpoint for admin review
+      fetch("api/submit_report.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          tableName: report, 
+          data: formattedData,
+          description: `Report submitted from main report page`
+        }),
+        credentials: 'include'
+      })
+        .then((res) => {
+          // Check if response is JSON
+          const contentType = res.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            return res.json();
+          } else {
+            throw new Error('Non-JSON response from server');
+          }
+        })
+        .then((result) => {
+          if (result.success) {
+            alert("Report submitted successfully! Your submission has been sent to the admin for review.");
+            table.querySelector("tbody").innerHTML = "";
+          } else {
+            alert("Submission failed: " + (result.error || "Unknown error"));
+          }
+        })
+        .catch((err) => {
+          console.error("Save failed:", err);
+          alert("Error saving data: " + err.message);
+        });
+
+      pendingSave = null;
+    }
+
+    // Load from draft if draft id present
+    async function loadDraftIfAny() {
+      const params = new URLSearchParams(window.location.search);
+      const draftId = params.get("draft");
+      const report = params.get("report");
+      if (!draftId || !report) return;
+      // Set dropdown to report and render table
+      const dropdown = document.getElementById("reportDropdown");
+      dropdown.value = report;
+      showTable();
+      try {
+        const res = await fetch(`api/fetch_draft.php?id=${encodeURIComponent(draftId)}`);
+        const json = await res.json();
+        if (!json.success) { alert(json.message || "Failed to load draft"); return; }
+        const rows = json.data || [];
+        const tbody = document.querySelector(`#${report}-table tbody`);
+        tbody.innerHTML = "";
+        rows.forEach(r => {
+          addRow(report);
+          const last = tbody.querySelector("tr:last-child");
+          const cells = last.querySelectorAll("td");
+          for (let i = 0; i < tables[report].length && i < r.length; i++) {
+            const cell = cells[i];
+            const select = cell.querySelector("select");
+            const dateInput = cell.querySelector("input[type='date']");
+            const numberInput = cell.querySelector("input[type='number']");
+            const textInput = cell.querySelector("input[type='text']");
+            if (select) select.value = r[i] || "";
+            else if (dateInput) dateInput.value = r[i] || "";
+            else if (numberInput) numberInput.value = r[i] || "";
+            else if (textInput) textInput.value = r[i] || "";
+            else cell.innerText = r[i] || "";
+          }
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    window.addEventListener('load', loadDraftIfAny);
+  </script>
+</body>
+</html>
