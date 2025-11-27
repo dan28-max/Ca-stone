@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spartan Data - User Dashboard</title>
+    <link rel="stylesheet" href="css/profile.css">
+    <link rel="stylesheet" href="css/profile-new.css">
+    <link rel="stylesheet" href="user-dashboard-enhanced.css?v=2.0.4">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="/image/BatStateU-NEU-Logo.png">
+    <link rel="apple-touch-icon" href="/image/BatStateU-NEU-Logo.png">
+    <style id="inline-submissions-card-style">
+      /* Inline fallback to guarantee card styling applies */
+      #reportTypeCardsContainerUser { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important; gap: 16px !important; margin-top: 8px !important; }
+      #reportTypeCardsContainerUser .report-type-card { background:#fff !important; border:1px solid #e5e7eb !important; border-radius:14px !important; box-shadow:0 2px 10px rgba(0,0,0,0.05) !important; overflow:hidden !important; transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease !important; padding:4px 0 0 0 !important; }
+      #reportTypeCardsContainerUser .report-type-card:hover { transform: translateY(-3px) !important; box-shadow:0 8px 22px rgba(0,0,0,0.10) !important; border-color:#dc143c22 !important; }
+      #reportTypeCardsContainerUser .report-type-card-header { display:flex !important; align-items:center !important; gap:10px !important; padding:14px 16px 6px 16px !important; }
+      #reportTypeCardsContainerUser .report-type-card-header .icon { width:28px !important; height:28px !important; border-radius:8px !important; background:#fde6ea !important; display:flex !important; align-items:center !important; justify-content:center !important; color:#dc143c !important; box-shadow: inset 0 0 0 1px #f6c9d1 !important; }
+      #reportTypeCardsContainerUser .report-type-card-header h3 { margin:0 !important; font-size:15px !important; font-weight:700 !important; color:#111827 !important; }
+      #reportTypeCardsContainerUser .report-type-card-body { padding:4px 16px 8px 16px !important; }
+      #reportTypeCardsContainerUser .report-type-card-body .metric { display:flex !important; align-items:baseline !important; gap:8px !important; }
+      #reportTypeCardsContainerUser .report-type-card-body .metric .label { font-size:12px !important; color:#6b7280 !important; }
+      #reportTypeCardsContainerUser .report-type-card-body .metric .value { font-size:22px !important; font-weight:800 !important; color:#111827 !important; }
+      #reportTypeCardsContainerUser .report-type-card-body .meta { display:flex !important; align-items:center !important; gap:12px !important; color:#6b7280 !important; font-size:12px !important; margin-top:6px !important; }
+      #reportTypeCardsContainerUser .report-type-card-body .meta i { color:#9ca3af !important; }
+      #reportTypeCardsContainerUser .report-type-card-footer { padding:12px 16px 16px 16px !important; display:flex !important; justify-content:flex-end !important; }
+      #reportTypeCardsContainerUser .btn-secondary { background:#fff !important; border:1px solid #e5e7eb !important; color:#111827 !important; border-radius:8px !important; font-weight:600 !important; padding:8px 12px !important; display:inline-flex !important; align-items:center !important; gap:8px !important; cursor:pointer !important; }
+      #reportTypeCardsContainerUser .btn-secondary:hover { background:#f9fafb !important; box-shadow:0 2px 8px rgba(0,0,0,0.06) !important; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="logo-container">
+                <div class="sidebar-logo">
+                    <img src="image/BatStateU-NEU-Logo.png" alt="BatStateU Logo" class="dashboard-logo">
+                </div>
+                <h1>Spartan Data</h1>
+                <p>User Dashboard</p>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item active" data-section="dashboard">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </li>
+                <li class="nav-item" data-section="my-tasks">
+                    <i class="fas fa-tasks"></i>
+                    <span>My Tasks</span>
+                </li>
+                <li class="nav-item" data-section="submissions">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>Submissions History</span>
+                </li>
+                <li class="nav-item" data-section="calendar">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Calendar</span>
+                </li>
+                <li class="nav-item" data-section="activity-log">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Activity Log</span>
+                </li>
+                <li class="nav-item" data-section="profile">
+                    <i class="fas fa-user-circle"></i>
+                    <span>My Profile</span>
+                </li>
+                <li class="nav-item" data-section="help">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Help & Support</span>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h2 id="pageTitle">Dashboard</h2>
+                    <p id="pageSubtitle">Welcome back! Here's your overview</p>
+                </div>
+                <div class="header-right">
+                    <div class="user-info">
+                        <div class="user-avatar" id="userAvatar">U</div>
+                        <div class="user-details">
+                            <h4 id="userName">User Name</h4>
+                            <p id="userRole">User</p>
+                        </div>
+                    </div>
+                    <button class="btn-logout" onclick="showLogoutConfirm()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Dashboard Section -->
+                <section id="dashboard" class="content-section active">
+                    <!-- Analytics inside dashboard -->
+                    <div class="section-header-formal">
+                        <div class="header-content">
+                            <h2><i class="fas fa-chart-bar"></i> My Analytics</h2>
+                            <p class="section-description">Performance and submission trends</p>
+                        </div>
+                    </div>
+                    <div id="analyticsContainer">
+                        <!-- Top Row: KPI Cards -->
+                        <div class="kpi-cards-grid">
+                            <!-- Total Submissions KPI -->
+                            <div class="kpi-card">
+                                <div class="kpi-header">
+                                    <span class="kpi-label">Total Submissions</span>
+                                </div>
+                                <div class="kpi-value" id="userKpiTotalSubmissions">0</div>
+                                <div class="kpi-change positive" id="userKpiSubmissionsChange">
+                                    <i class="fas fa-arrow-up"></i> <span>0%</span>
+                                </div>
+                                <div class="kpi-mini-chart" id="userKpiSubmissionsChart"></div>
+                            </div>
+
+                            <!-- Assigned Reports KPI -->
+                            <div class="kpi-card">
+                                <div class="kpi-header">
+                                    <span class="kpi-label">Assigned Reports</span>
+                                </div>
+                                <div class="kpi-value" id="userKpiAssignedReports">0</div>
+                                <div class="kpi-change positive" id="userKpiAssignedChange">
+                                    <i class="fas fa-arrow-up"></i> <span>0%</span>
+                                </div>
+                                <div class="kpi-mini-chart" id="userKpiAssignedChart"></div>
+                            </div>
+
+                            <!-- Completed Reports KPI -->
+                            <div class="kpi-card">
+                                <div class="kpi-header">
+                                    <span class="kpi-label">Completed Reports</span>
+                                </div>
+                                <div class="kpi-value" id="userKpiCompletedReports">0</div>
+                                <div class="kpi-change positive" id="userKpiCompletedChange">
+                                    <i class="fas fa-arrow-up"></i> <span>0%</span>
+                                </div>
+                                <div class="kpi-mini-chart" id="userKpiCompletedChart"></div>
+                            </div>
+
+                        </div>
+
+                        <!-- Middle Row: Large Report Cards -->
+                        <div class="report-cards-row">
+                            <!-- Submissions Growth Report -->
+                            <div class="report-card-large">
+                                <div class="report-card-header">
+                                    <div class="report-header-content">
+                                        <h3>Submissions Growth Report</h3>
+                                        <p>See insights on how your submissions have grown and changed over time.</p>
+                                    </div>
+                                    <div class="report-time-indicators" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                                        <select id="userAnalyticsReportTypeSelect" class="formal-select" style="min-width:200px;">
+                                            <option value="">All Report Types</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="report-card-body">
+                                    <canvas id="userSubmissionsGrowthChart"></canvas>
+                                </div>
+                            </div>
+
+                            <!-- Submissions Monthly Report -->
+                            <div class="report-card-large">
+                                <div class="report-card-header">
+                                    <div class="report-header-content">
+                                        <h3>Submissions Monthly Report</h3>
+                                        <div class="report-growth-indicator positive" id="userMonthlyReportGrowth">
+                                            <i class="fas fa-arrow-up"></i> <span>0%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="report-card-body">
+                                    <canvas id="userSubmissionsMonthlyChart"></canvas>
+                                </div>
+                                <div class="report-card-footer">
+                                    <div class="report-metric">
+                                        <span class="metric-value" id="userMonthlyImpressions">0</span>
+                                        <span class="metric-label">Submissions</span>
+                                    </div>
+                                    <div class="report-metric">
+                                        <span class="metric-value" id="userMonthlyGrowth">0%</span>
+                                        <span class="metric-label">Growth Rate</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bottom Row: Detailed Reports -->
+                        <div class="detailed-reports-row">
+                            <!-- Reports by Type -->
+                            <div class="detailed-report-card">
+                                <div class="detailed-report-header">
+                                    <h3>Reports by Type</h3>
+                                </div>
+                                <div class="detailed-report-body">
+                                    <div class="donut-chart-wrapper">
+                                        <canvas id="userReportsByTypeChart"></canvas>
+                                        <div class="donut-center-text" id="userReportTypeChartCenterText">0</div>
+                                    </div>
+                                    <div class="donut-legend" id="userReportTypeChartLegend"></div>
+                                </div>
+                            </div>
+
+                            <!-- Top Active Reports -->
+                            <div class="detailed-report-card">
+                                <div class="detailed-report-header">
+                                    <h3>Top Active Reports</h3>
+                                </div>
+                                <div class="detailed-report-body">
+                                    <table class="top-reports-table" id="userTopReportsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Report Type</th>
+                                            <th>Submissions</th>
+                                        </tr>
+                                    </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="2" style="text-align: center; padding: 40px;">
+                                                    <div class="loading-state">
+                                                        <i class="fas fa-spinner fa-spin"></i>
+                                                        <p>Loading reports...</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- My Reports Section -->
+                <section id="my-reports" class="content-section">
+                    <div class="section-header-formal">
+                        <div class="header-content">
+                            <h2><i class="fas fa-file-alt"></i> My Reports</h2>
+                            <p class="section-description">All reports assigned to you</p>
+                        </div>
+                    </div>
+
+                    <div id="myReportsContainer">
+                        <div class="loading-state">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading reports...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Submissions History Section -->
+                <section id="submissions" class="content-section">
+                    <div class="section-header-formal">
+                        <div class="header-content">
+                            <h2><i class="fas fa-history"></i> Submissions History</h2>
+                            <p class="section-description">View all your submitted reports</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn-secondary" onclick="userDashboard.refreshSubmissions()">
+                                <i class="fas fa-sync"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filter Controls -->
+                    <div class="filter-controls" style="margin-bottom: 24px; display: flex; gap: 16px; flex-wrap: wrap;">
+                        <div class="filter-group">
+                            <label><i class="fas fa-table"></i> Report Type:</label>
+                            <select id="submissionReportFilter" class="formal-select" onchange="userDashboard.filterSubmissions()">
+                                <option value="">All Reports</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Admin-like cards container for user submissions -->
+                    <div id="reportTypeCardsContainerUser" class="report-types-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 16px;"></div>
+
+                    <div id="submissionsContainer">
+                        <!-- Fallback table (hidden by default) -->
+                        <div class="table-wrapper" style="display: none;">
+                            <table class="formal-table">
+                                <thead>
+                                    <tr>
+                                        <th>Report Type</th>
+                                        <th>Campus</th>
+                                        <th>Office</th>
+                                        <th style="width: 80px;">Records</th>
+                                        <th style="cursor: pointer;" onclick="userDashboard.sortByDate()">
+                                            Submitted Date
+                                            <i class="fas fa-sort" id="dateSortIcon"></i>
+                                        </th>
+                                        <th style="width: 150px;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="submissionsTableBody">
+                                    <tr>
+                                        <td colspan="6" style="text-align: center; padding: 40px;">
+                                            <i class="fas fa-spinner fa-spin" style="font-size: 24px; color: #dc143c;"></i>
+                                            <p style="margin-top: 10px; color: #666;">Loading submissions...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- My Tasks Section -->
+                <section id="my-tasks" class="content-section">
+                    <div class="section-header-formal">
+                        <div class="header-content">
+                            <h2><i class="fas fa-tasks"></i> My Tasks</h2>
+                            <p class="section-description">Manage your assigned tasks and deadlines</p>
+                        </div>
+                        
+                    </div>
+                    <div id="myTasksContainer">
+                        <div class="loading-state">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading tasks...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Calendar Section -->
+                <section id="calendar" class="content-section">
+                    <div class="section-header-formal">
+                        <div class="header-content">
+                            <h2><i class="fas fa-calendar-alt"></i> Calendar</h2>
+                            <p class="section-description">View your deadlines and upcoming tasks</p>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 350px; gap: 24px; margin-top: 24px;">
+                        <!-- Calendar Grid -->
+                        <div class="calendar-container" style="background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                            <div class="calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h3 id="calendarMonthYear" style="margin: 0; font-size: 24px; font-weight: 700; color: #1a202c;">January 2024</h3>
+                            </div>
+                            
+                            <!-- Calendar Weekday Headers -->
+                            <div class="calendar-weekdays" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 12px;">
+                                <div class="weekday" style="text-align: center; font-weight: 700; color: #64748b; font-size: 13px; padding: 8px;">Sun</div>
+                                <div class="weekday" style="text-align: center; font-weight: 700; color: #64748b; font-size: 13px; padding: 8px;">Mon</div>
+                                <div class="weekday" style="text-align: center; font-weight: 700; color: #64748b; font-size: 13px; padding: 8px;">Tue</div>
+                                <div class="weekday" style="text-align: center; font-weight: 700; color: #64748b; font-size: 13px; padding: 8px;">Wed</div>
+                                <div class="weekday" style="text-align: center; font-weight: 700; color: #64748b; font-size: 13px; padding: 8px;">Thu</div>
+                                <div class="weekday" style="text-align: center; font-weight: 700; color: #64748b; font-size: 13px; padding: 8px;">Fri</div>
+                                <div class="weekday" style="text-align: center; font-weight: 700; color: #64748b; font-size: 13px; padding: 8px;">Sat</div>
+                            </div>
+                            
+                            <!-- Calendar Days Grid -->
+                            <div id="calendarGrid" class="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;">
+                                <!-- Calendar days will be rendered here by JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <!-- Upcoming Deadlines Sidebar -->
+                        <div class="calendar-sidebar" style="background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); height: fit-content;">
+                            <h3 style="margin: 0 0 20px 0; font-size: 18px; font-weight: 700; color: #1a202c; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-clock" style="color: #dc143c;"></i> Upcoming Deadlines
+                            </h3>
+                            <div id="upcomingDeadlinesList" style="display: flex; flex-direction: column; gap: 12px;">
+                                <!-- Upcoming deadlines will be rendered here -->
+                            </div>
+                            <div id="noDeadlines" style="text-align: center; padding: 40px 20px; color: #94a3b8;">
+                                <i class="fas fa-calendar-check" style="font-size: 48px; margin-bottom: 12px; opacity: 0.5;"></i>
+                                <p style="margin: 0; font-size: 14px;">No upcoming deadlines</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </section>
+
+                <!-- Activity Log Section -->
+                <section id="activity-log" class="content-section">
+                    <div class="section-header-formal" style="background: linear-gradient(180deg, #b31217, #dc143c); color:#fff; border-radius:12px; padding:20px; box-shadow: 0 4px 16px rgba(0,0,0,0.08);">
+                        <div class="header-content" style="display:flex; justify-content:space-between; align-items:center; gap:16px;">
+                            <div>
+                                <h2 style="color:#fff; margin:0; display:flex; gap:10px; align-items:center;"><i class="fas fa-clipboard-list"></i> User Activity</h2>
+                                <p class="section-description" style="color:#ffe2e6; margin:4px 0 0;">Monitor user login activity and system usage</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+
+                    <!-- Recent Activity Card -->
+                    <div style="background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                            <div style="display:flex; align-items:center; gap:8px; color:#1f2937; font-weight:700;"><i class="fas fa-fire" style="color:#dc143c;"></i> Recent User Activity</div>
+                            <span id="userActivityCount" style="background:#fee2e2; color:#b91c1c; font-weight:700; padding:4px 10px; border-radius:999px; font-size:12px;">0</span>
+                        </div>
+                        <div id="userActivityList" style="display:grid; gap:14px;"></div>
+                    </div>
+                </section>
+
+                <!-- Profile Section -->
+                <section id="profile" class="content-section">
+                    <div class="section-header-formal">
+                        <div class="header-content">
+                            <h2><i class="fas fa-user-circle"></i> My Profile</h2>
+                            <p class="section-description">View and update your profile information</p>
+                        </div>
+                    </div>
+                    <div id="profileContainer">
+                        <div class="loading-state">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading profile...</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Help Section -->
+                <section id="help" class="content-section">
+                    <div class="section-header-formal">
+                        <div class="header-content">
+                            <h2><i class="fas fa-question-circle"></i> Help & Support</h2>
+                            <p class="section-description">Get help with using the system</p>
+                        </div>
+                    </div>
+                    <div id="helpContainer">
+                        <div class="loading-state">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            <p>Loading help...</p>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Report Submission Modal -->
+    <div id="reportModal" class="report-modal" style="display: none;">
+        <div class="report-modal-overlay" onclick="userDashboard.closeReportModal()"></div>
+        <div class="report-modal-content">
+            <div class="report-modal-header">
+                <div class="modal-header-top-row">
+                    <div class="modal-logo-header">
+                        <img src="image/BatStateU-NEU-Logo.png" alt="Spartan Data Logo" class="modal-logo">
+                        <div class="modal-system-name">Spartan Data</div>
+                    </div>
+                    <div class="modal-header-actions">
+                        <button class="modal-close-btn" onclick="userDashboard.closeReportModal()" title="Close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-header-content">
+                    <p class="modal-subtitle">Fill in the required information and submit</p>
+                </div>
+            </div>
+            <div class="report-modal-body" id="reportModalBody">
+                <!-- Report form will be loaded here -->
+                <div class="loading-state">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>Loading report form...</p>
+                    <div class="loading-bar">
+                        <div class="loading-bar-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logout Confirmation Modal -->
+    <div id="logoutConfirmModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-header-content">
+                    <i class="fas fa-sign-out-alt modal-header-icon"></i>
+                    <h3>Confirm Logout</h3>
+                </div>
+                <button class="close" id="btnLogoutClose" title="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-icon-wrapper">
+                    <i class="fas fa-door-open modal-logout-icon"></i>
+                </div>
+                <p>Are you sure you want to <strong>logout</strong>?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" id="btnLogoutCancel">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="btn-logout" id="btnLogoutConfirm">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="modal-utils.js?v=2.0.2"></script>
+    <script src="js/dashboard-sync.js?v=1.0"></script>
+    <script src="user-dashboard-enhanced.js?v=2.0.4"></script>
+    <script>
+        // Logout confirmation modal functions
+        function showLogoutConfirm() {
+            const modal = document.getElementById('logoutConfirmModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                modal.style.zIndex = '10001';
+            }
+        }
+        
+        function closeLogoutConfirm() {
+            const modal = document.getElementById('logoutConfirmModal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        }
+        
+        // Setup event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const closeBtn = document.getElementById('btnLogoutClose');
+            const cancelBtn = document.getElementById('btnLogoutCancel');
+            const confirmBtn = document.getElementById('btnLogoutConfirm');
+            
+            if (closeBtn) {
+                closeBtn.addEventListener('click', closeLogoutConfirm);
+            }
+            
+            if (cancelBtn) {
+                cancelBtn.addEventListener('click', closeLogoutConfirm);
+            }
+            
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', function() {
+                    closeLogoutConfirm();
+                    if (typeof logout === 'function') {
+                        logout();
+                    } else {
+                        window.location.href = 'logout.php';
+                    }
+                });
+            }
+        });
+    </script>
+    <style>
+    /* Enhanced Logout Confirmation Modal for User Dashboard */
+    #logoutConfirmModal.modal {
+        display: none !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        background-color: rgba(0, 0, 0, 0.6) !important;
+        backdrop-filter: blur(4px) !important;
+        -webkit-backdrop-filter: blur(4px) !important;
+        z-index: 10001 !important;
+        align-items: center !important;
+        justify-content: center !important;
+        animation: fadeIn 0.2s ease-out;
+    }
+    
+    #logoutConfirmModal.modal[style*="display: flex"],
+    #logoutConfirmModal.modal[style*="display:flex"] {
+        display: flex !important;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.8; transform: scale(1.05); }
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-8px); }
+    }
+    
+    #logoutConfirmModal .modal-content {
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 32px 80px rgba(0, 0, 0, 0.3),
+                    0 16px 40px rgba(220, 20, 60, 0.15);
+        overflow: hidden;
+        width: 90%;
+        max-width: 520px;
+        animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transform-origin: center;
+    }
+    
+    #logoutConfirmModal .modal-header {
+        padding: 20px 24px;
+        background: linear-gradient(135deg, #dc143c 0%, #b91c1c 50%, #a00000 100%);
+        color: #ffffff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    #logoutConfirmModal .modal-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+        pointer-events: none;
+    }
+    
+    #logoutConfirmModal .modal-header-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        position: relative;
+        z-index: 1;
+        flex: 1;
+    }
+    
+    #logoutConfirmModal .modal-header-icon {
+        font-size: 1.5rem;
+        color: rgba(255, 255, 255, 0.95);
+        animation: pulse 2s ease-in-out infinite;
+    }
+    
+    #logoutConfirmModal .modal-header h3 {
+        margin: 0;
+        font-size: 1.3rem;
+        color: #ffffff;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    #logoutConfirmModal .modal-body {
+        padding: 32px 24px;
+        font-size: 1.05rem;
+        line-height: 1.7;
+        background: linear-gradient(to bottom, #ffffff 0%, #fafbfc 100%);
+        color: #1f2937;
+        text-align: center;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    #logoutConfirmModal .modal-icon-wrapper {
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    #logoutConfirmModal .modal-logout-icon {
+        font-size: 3.5rem;
+        color: #dc143c;
+        opacity: 0.9;
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    #logoutConfirmModal .modal-body p {
+        color: #374151;
+        margin: 0;
+        font-weight: 500;
+        font-size: 1.05rem;
+    }
+    
+    #logoutConfirmModal .modal-body p strong {
+        color: #dc143c;
+        font-weight: 700;
+    }
+    
+    #logoutConfirmModal .modal-footer {
+        padding: 20px 24px;
+        background: #ffffff;
+        border-top: 1px solid #e5e7eb;
+        text-align: center;
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        align-items: center;
+    }
+    
+    #logoutConfirmModal .close {
+        color: rgba(255, 255, 255, 0.95);
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.15);
+        border: none;
+        border-radius: 8px;
+        padding: 8px 12px;
+        line-height: 1;
+        transition: all 0.2s ease;
+        position: absolute;
+        top: 50%;
+        right: 24px;
+        transform: translateY(-50%);
+        z-index: 2;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    #logoutConfirmModal .close:hover {
+        background: rgba(255, 255, 255, 0.25);
+        color: #ffffff;
+        transform: rotate(90deg);
+    }
+    
+    #logoutConfirmModal .close i {
+        font-size: 1rem;
+    }
+    
+    #logoutConfirmModal .btn-logout,
+    #logoutConfirmModal .btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.95rem;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        border: none;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    #logoutConfirmModal .btn-logout::before,
+    #logoutConfirmModal .btn-cancel::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        transform: translate(-50%, -50%);
+        transition: width 0.4s ease, height 0.4s ease;
+    }
+    
+    #logoutConfirmModal .btn-logout:hover::before,
+    #logoutConfirmModal .btn-cancel:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+    
+    #logoutConfirmModal .btn-logout i,
+    #logoutConfirmModal .btn-cancel i {
+        position: relative;
+        z-index: 1;
+        font-size: 0.9rem;
+    }
+    
+    #logoutConfirmModal .btn-logout {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
+        color: #ffffff;
+        box-shadow: 0 4px 14px rgba(220, 38, 38, 0.4),
+                    0 2px 6px rgba(220, 38, 38, 0.3);
+    }
+    
+    #logoutConfirmModal .btn-logout:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(220, 38, 38, 0.5),
+                    0 4px 10px rgba(220, 38, 38, 0.4);
+        filter: brightness(1.05);
+    }
+    
+    #logoutConfirmModal .btn-logout:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+    }
+    
+    #logoutConfirmModal .btn-cancel {
+        background: #f3f4f6;
+        color: #374151;
+        border: 2px solid #e5e7eb;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    #logoutConfirmModal .btn-cancel:hover {
+        background: #e5e7eb;
+        border-color: #d1d5db;
+        color: #1f2937;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    #logoutConfirmModal .btn-cancel:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    </style>
+</body>
+</html>
